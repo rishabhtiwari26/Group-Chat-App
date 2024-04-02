@@ -25,15 +25,14 @@
             }
             
             
-            axios.post('http://13.201.166.92/user/login',obj)
+            axios.post('http://localhost:3000/user/login',obj)
                 .then(res=>{  
                     console.log(res)
                     if(res.data.success===true){
                         
                         alert('Login successfully')
                         localStorage.setItem('token',res.data.token)
-                        localStorage.setItem('rowsPerPage','5')
-                        window.location.href= '/addExpense.htm'
+                        
                         
                     }
                 })
