@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chat App</title>
 </head>
-<body onload="getChats()">
+<body>
     <h2>Chat App</h2>
     <p></p>
     <form action="">
@@ -59,6 +59,8 @@
             })
                 })
         }
+        getChats()
+        setInterval(getChats, 10000);
     </script>
 </body>
 </html>
