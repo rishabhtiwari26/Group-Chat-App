@@ -2,6 +2,7 @@ const express = require('express')
 
 const app = express()
 const bodyParser=require('body-parser')
+const cors = require('cors')
 const sequelize  = require('./util/database')
 const path=require('path')
 
@@ -9,7 +10,10 @@ const path=require('path')
 const userRoute=require('./route/userRoute')
 
 app.use(bodyParser.json())
-
+app.use(cors({
+    origin:'http://127.0.0.1:5500',
+    methods:['GET',"POST"]
+}))
 
 
 app.use('/user',userRoute)
