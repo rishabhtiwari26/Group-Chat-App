@@ -46,7 +46,7 @@ exports.login=(req,res,next)=>{
                         throw new Error(err)
                     }
                     if(result===true){
-                        res.status(200).send({success:true,message:'User Login successfully',token:generateAccessToken(user.id)})
+                        res.status(200).send({success:true,message:'User Login successfully',redirectUrl: '/chat/chat_app',token:generateAccessToken(user.id),userName:user.name})
                     }
                     else{
                         res.status(401).send({success:false,message:'Password do not match'})
