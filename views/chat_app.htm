@@ -5,13 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chat App</title>
 </head>
-<body>
+<body onload="getChats()">
     <h2>Chat App</h2>
     <p></p>
     <form action="">
         <input type="text" name="userChat" id="userChat">
         <button type="submit" onclick="postChat()">Submit</button>
     </form>
+    <ul id="chatUL" class="chatClass">
+        
+    </ul>
     <script src="https://cdn.jsdelivr.net/npm/axios@1.1.2/dist/axios.min.js"></script>
     <script>
         const userlogin= (localStorage.getItem('token')) ? true: false
@@ -27,12 +30,34 @@
         }
         function postChat(){
             const token = localStorage.getItem('token')
-            console.log(token)
             let obj ={
                 chat:document.getElementById('userChat').value
             }
-            axios.post('http://localhost:3000/chat/postchat',obj,{headers:{'Authorization':token}})
-            
+            axios.post('http://localhost:3000/chat/postchat',obj,{headers:{'Authorization':token}}).then(res=>{
+                console.log(res)
+            }).catch(e=>{
+                console.log(e)
+            })}
+        function getChats(){
+            const token = localStorage.getItem('token')
+            axios.get('http://localhost:3000/chat/getchats',{headers:{'Authorization':token}})
+                .then(res=>{
+                    console.log(res)
+                    let list=document.getElementById('chatUL')
+                    list.innerHTML=''
+                    res.data.chats.forEach(chat=>{
+                        let li= document.createElement('li')
+                        li.class='detailsList';
+                        let rmvbutton=document.createElement('button')
+                        rmvbutton.id='remove'
+                        rmvbutton.innerText='Remove'
+                        rmvbutton.addEventListener('click',function(){
+                            deletechat(chat.id)
+                        })
+                        li.append(document.createTextNode(chat.userDetail.name+'-'),document.createTextNode(chat.chat+' '),rmvbutton)
+                        list.appendChild(li)
+            })
+                })
         }
     </script>
 </body>
