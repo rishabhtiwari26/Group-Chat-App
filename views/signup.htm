@@ -29,10 +29,11 @@
             const obj = {
                 name:document.getElementById('name').value,
                 email:document.getElementById('email').value,
-                password:document.getElementById('password').value
+                password:document.getElementById('password').value,
+                mobileNumber:document.getElementById('mnumber').value
             }
             
-            axios.post('http://13.201.166.92/user/signup',obj)
+            axios.post('http://localhost:3000/user/signup',obj)
                 .then(res=>{  
                     if(res.data==='Email already exists'){
                         alert('Email Already exists')
