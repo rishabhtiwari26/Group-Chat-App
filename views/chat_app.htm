@@ -34,33 +34,72 @@
                 chat:document.getElementById('userChat').value
             }
             axios.post('http://localhost:3000/chat/postchat',obj,{headers:{'Authorization':token}}).then(res=>{
-                console.log(res)
             }).catch(e=>{
-                console.log(e)
-            })}
-        function getChats(){
-            const token = localStorage.getItem('token')
-            axios.get('http://localhost:3000/chat/getchats',{headers:{'Authorization':token}})
-                .then(res=>{
-                    console.log(res)
-                    let list=document.getElementById('chatUL')
-                    list.innerHTML=''
-                    res.data.chats.forEach(chat=>{
-                        let li= document.createElement('li')
-                        li.class='detailsList';
-                        let rmvbutton=document.createElement('button')
-                        rmvbutton.id='remove'
-                        rmvbutton.innerText='Remove'
-                        rmvbutton.addEventListener('click',function(){
-                            deletechat(chat.id)
-                        })
-                        li.append(document.createTextNode(chat.userDetail.name+'-'),document.createTextNode(chat.chat+' '),rmvbutton)
-                        list.appendChild(li)
             })
-                })
         }
-        getChats()
-        setInterval(getChats, 10000);
+        
+        function initial() {
+            const storedChats = retrieveChats();
+            let lastChatId
+            if(storedChats.length > 0){
+                lastChatId =storedChats[storedChats.length - 1].id
+            }
+            else{
+                lastChatId =0
+            }
+            getNewChats(lastChatId);
+        }
+        function storeChats(chats) {
+            const recentChats = chats.slice(-10);
+            localStorage.setItem('chats', JSON.stringify(recentChats));
+        }
+    
+        function retrieveChats() {
+            const storedChats = localStorage.getItem('chats');
+            return storedChats !== null ? JSON.parse(storedChats) : [];
+            
+        }
+
+    
+        function updateChats(chats) {
+            let list = document.getElementById('chatUL');
+            list.innerHTML = '';
+            chats.forEach(chat => {
+                let li = document.createElement('li');
+                li.class = 'detailsList';
+                let rmvbutton = document.createElement('button');
+                rmvbutton.id = 'remove';
+                rmvbutton.innerText = 'Remove';
+                rmvbutton.addEventListener('click', function () {
+                    deleteChat(chat.id);
+                });
+                li.append(document.createTextNode(chat.userDetail.name + '-'), document.createTextNode(chat.chat + ' '), rmvbutton);
+                list.appendChild(li);
+            });
+        }
+    
+        async function getNewChats(lastChatId) {
+            const token = localStorage.getItem('token');
+            const url = 'http://localhost:3000/chat/getchats?lastChatId=' + lastChatId;
+            const res= await axios.get(url, { headers: { 'Authorization': token } })
+            const storedChats = retrieveChats();
+            const newChats = res.data;
+            const allChats = storedChats.concat(newChats);
+            const recentChats=allChats.slice(-10)
+            storeChats(recentChats);
+            updateChats(recentChats);
+                
+        }
+    
+    
+        window.onload = initial;
+        setInterval(() => {
+            const storedChats = retrieveChats();
+            const lastChatId = storedChats.length > 0 ? storedChats[storedChats.length - 1].id : 0;
+            getNewChats(lastChatId);
+        }, 5000);
+
+            
     </script>
 </body>
 </html>
