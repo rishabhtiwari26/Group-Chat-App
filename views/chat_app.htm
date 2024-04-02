@@ -8,6 +8,11 @@
 <body>
     <h2>Chat App</h2>
     <p></p>
+    <form action="">
+        <input type="text" name="userChat" id="userChat">
+        <button type="submit" onclick="postChat()">Submit</button>
+    </form>
+    <script src="https://cdn.jsdelivr.net/npm/axios@1.1.2/dist/axios.min.js"></script>
     <script>
         const userlogin= (localStorage.getItem('token')) ? true: false
         if(userlogin){
@@ -19,6 +24,15 @@
             const p=document.createElement('p')
             p.innerText='failed'
             document.body.append(p)
+        }
+        function postChat(){
+            const token = localStorage.getItem('token')
+            console.log(token)
+            let obj ={
+                chat:document.getElementById('userChat').value
+            }
+            axios.post('http://localhost:3000/chat/postchat',obj,{headers:{'Authorization':token}})
+            
         }
     </script>
 </body>
