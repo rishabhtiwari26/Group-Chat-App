@@ -1,5 +1,6 @@
 const chat =require('../model/chatModel')
 const userTable=require('../model/userModel')
+const Group=require('../model/groupModel')
 const {Op}=require('sequelize')
 
 exports.postchat=(req,res,next)=>{
@@ -43,4 +44,21 @@ exports.getchats=(req,res,next)=>{
             console.error('Error fetching new chats:', error)
             res.status(500).json({ error: 'No new Chats' })
         })
+}
+
+exports.createGroup=(req,res)=>{
+    const user =req.user
+    console.log(req.user,req.body)
+    const {groupName}=req.body
+    user.createGroup({
+        groupName:groupName,
+        createdBy:user.id
+    }).then(data=>{
+        console.log('Group Created')
+        res.status(200).json({success:true,message:'Group Created',data})
+    }).catch(e=>{
+        console.log(e)
+        res.json({success:false,message:'Something went wrong'})
+    })
+
 }

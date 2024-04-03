@@ -2,28 +2,22 @@ const Sequelize  = require('sequelize')
 const sequelize=require('../util/database')
 
 
-const user = sequelize.define('userDetails',{
+const user = sequelize.define('group',{
     id:{
         allowNull:false,
         primaryKey:true,
         autoIncrement:true,
         type:Sequelize.INTEGER
     },
-    name:{
+    groupName:{
         type:Sequelize.STRING,
         allowNull:false
     },
-    email:{
-        type:Sequelize.STRING,
-        allowNull:false,
-        unique:true
+    membersNo:{
+        type:Sequelize.INTEGER
     },
-    password:{
+    createdBy:{
         type:Sequelize.STRING,
-        allowNull:false
-    },
-    mobileNumber:{
-        type:Sequelize.BIGINT(10),
         allowNull:false
     }
 }

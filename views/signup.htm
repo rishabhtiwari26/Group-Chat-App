@@ -2,50 +2,102 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" >
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sign-Up</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #DCDCDC;
+            margin-top: 20px;
+        }
+
+        .card {
+            margin-bottom: 1.5rem;
+            box-shadow: 0 1px 15px 1px rgba(52, 40, 104, .08);
+        }
+
+        .card {
+            position: relative;
+            display: -ms-flexbox;
+            display: flex;
+            -ms-flex-direction: column;
+            flex-direction: column;
+            min-width: 0;
+            word-wrap: break-word;
+            background-color: #fff;
+            background-clip: border-box;
+            border: 1px solid #e5e9f2;
+            border-radius: .2rem;
+        }
+    </style>
 </head>
 <body>
-    <form>
-        <label for="name">Enter Your Name:-</label>
-        <input type="text" name="Name" id="name" placeholder="name" required>
-        <label for="email">Email:-</label>
-        <input type="text" name="email" id="email" placeholder="email" required>
-        <label for="password">Password:-</label>
-        <input type="password" name="password" id="password" placeholder="password" required>
-        <label for="mnumber">Mobile Number:-</label>
-        <input type="text" inputmode="numeric" pattern="[0-9]*" name="mnumber" id="mnumber" placeholder="Mobile Number" required>
+    <div class="container h-100">
+        <div class="row h-100">
+            <div class="col-sm-10 col-md-8 col-lg-6 mx-auto d-table h-100">
+                <div class="d-table-cell align-middle">
 
-        <button type="button" onclick="usersignUp()">Submit</button>
-    </form>
-    <a href="/login.htm">Login</a>
-    
-    
-    
-    <script src="https://cdn.jsdelivr.net/npm/axios@1.1.2/dist/axios.min.js"></script>
+                    <div class="text-center mt-4">
+                        <h1 class="h2">Sign Up</h1>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="m-sm-4">
+                                <form>
+                                    <div class="form-group">
+                                        <label for="name">Enter Your Name:</label>
+                                        <input class="form-control form-control-lg" type="text" id="name" name="name" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="email">Email:</label>
+                                        <input class="form-control form-control-lg" type="email" id="email" name="email" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="password">Password:</label>
+                                        <input class="form-control form-control-lg" type="password" id="password" name="password" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="mnumber">Mobile Number:</label>
+                                        <input class="form-control form-control-lg" type="text" id="mnumber" inputmode="numeric" pattern="[0-9]*" name="mnumber" required>
+                                    </div>
+                                    <div class="text-center mt-3">
+                                        <button type="button" class="btn btn-lg btn-primary" onclick="usersignUp()">Submit</button>
+                                    </div>
+                                </form>
+                                <div class="text-center mt-3">
+                                    <a href="/login.htm" class="btn btn-lg btn-secondary">Login</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/axios@0.21.1/dist/axios.min.js"></script>
     <script>
         function usersignUp() {
-            
             const obj = {
-                name:document.getElementById('name').value,
-                email:document.getElementById('email').value,
-                password:document.getElementById('password').value,
-                mobileNumber:document.getElementById('mnumber').value
-            }
-            
-            axios.post('http://localhost:3000/user/signup',obj)
-                .then(res=>{  
-                    if(res.data==='Email already exists'){
-                        alert('Email Already exists')
+                name: document.getElementById('name').value,
+                email: document.getElementById('email').value,
+                password: document.getElementById('password').value,
+                mobileNumber: document.getElementById('mnumber').value
+            };
+
+            axios.post('http://localhost:3000/user/signup', obj)
+                .then(res => {
+                    if (res.data === 'Email already exists') {
+                        alert('Email Already exists');
+                    } else {
+                        console.log(res);
                     }
-                    else{
-                        console.log(res)
-                    }
-                    location.replace('/login.htm')
+                    location.replace('/login.htm');
                 })
-                .catch(e=>console.log(e))
-            } 
-        
+                .catch(e => console.log(e));
+        }
     </script>
 </body>
 </html>

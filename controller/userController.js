@@ -64,3 +64,13 @@ exports.login=(req,res,next)=>{
             
         })
 }
+exports.getGroups=async (req,res,next)=>{
+    const user=req.user
+    try {
+        console.log('inside group controller')
+        const userGroups = await user.getGroups();
+        res.status(201).json(userGroups);
+      } catch (err) {
+        console.log(err);
+      }
+    };

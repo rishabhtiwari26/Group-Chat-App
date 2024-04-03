@@ -11,6 +11,8 @@ const sequelize  = require('./util/database')
 
 const user = require('./model/userModel')
 const chat =require('./model/chatModel')
+const Group =require('./model/groupModel')
+
 const userRoute=require('./route/userRoute')
 const chatRoute=require('./route/chatRoute')
 
@@ -37,7 +39,13 @@ app.use('/chat_app.htm', (req, res) => {
 user.hasMany(chat)
 chat.belongsTo(user,{constraint:true,onDelete:'CASCADE'})
 
-sequelize.sync({})
+Group.hasMany(chat);
+chat.belongsTo(Group);
+
+user.belongsToMany(Group, { through: 'UserGroup' });
+Group.belongsToMany(user, { through: 'UserGroup' })
+
+sequelize.sync()
     .then(res=>{
         // console.log(res)
         app.listen(3000)

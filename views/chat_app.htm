@@ -4,29 +4,80 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chat App</title>
+    <style>
+        #createGroupForm {
+            display: none;
+          }
+          #groupListContainer {
+            width: 200px;
+            float: left;
+          }
+          #groupList {
+            list-style-type: none;
+            padding: 0;
+          }
+          #groupList li {
+            margin-bottom: 5px;
+            cursor: pointer;
+          }
+          #groupList li:hover {
+            background-color: lightgray;
+          }
+        #createGroupForm{
+            position: fixed;
+            top: 30px;
+            right: 10px;
+        }
+        #createGroupButton{
+            position: fixed;
+            top: 10px;
+            right: 10px;
+        }
+    </style>
 </head>
 <body>
     <h2>Chat App</h2>
     <p></p>
+    <div id="groupListContainer">
+        <h3>Groups</h3>
+        <ul id="groupList">
+            <!-- Group list will be populated here -->
+        </ul>
+    </div>
     <form action="">
         <input type="text" name="userChat" id="userChat">
         <button type="submit" onclick="postChat()">Submit</button>
     </form>
+    <button id="createGroupButton" onclick="toggleForm()">Create Group</button>
+    <form id="createGroupForm">
+        <label for="groupName">Group Name:</label>
+        <input type="text" id="groupName" name="groupName" required><br><br>
+      
+        <div id="memberList">
+          
+        </div><br>
+      
+        <button type="button" onclick="createGroup()">Create</button>
+    </form>
+    
     <ul id="chatUL" class="chatClass">
         
     </ul>
     <script src="https://cdn.jsdelivr.net/npm/axios@1.1.2/dist/axios.min.js"></script>
     <script>
-        const userlogin= (localStorage.getItem('token')) ? true: false
-        if(userlogin){
-            const p=document.createElement('p')
-            p.innerText='You joined'
-            document.body.append(p)
-        }
-        else{
-            const p=document.createElement('p')
-            p.innerText='failed'
-            document.body.append(p)
+        function createGroup(){
+            const obj={groupName:document.getElementById('groupName').value}
+            console.log(obj)
+            const token = localStorage.getItem('token')
+            axios.post('http://localhost:3000/chat/create-group',obj,{headers:{'Authorization':token}})
+                .then(res=>{
+                    console.log(res)
+                    // Add logic to update group list
+                    // You may need to call a function to fetch and populate group list here
+                    fetchGroups()
+                }).catch(e=>{
+                    console.log(e)
+                })
         }
         function postChat(){
             const token = localStorage.getItem('token')
@@ -67,17 +118,32 @@
             chats.forEach(chat => {
                 let li = document.createElement('li');
                 li.class = 'detailsList';
-                let rmvbutton = document.createElement('button');
-                rmvbutton.id = 'remove';
-                rmvbutton.innerText = 'Remove';
-                rmvbutton.addEventListener('click', function () {
-                    deleteChat(chat.id);
-                });
-                li.append(document.createTextNode(chat.userDetail.name + '-'), document.createTextNode(chat.chat + ' '), rmvbutton);
+                li.append(document.createTextNode(chat.userDetail.name + '-'), document.createTextNode(chat.chat + ' '));
                 list.appendChild(li);
             });
         }
-    
+        function toggleForm() {
+            let form = document.getElementById("createGroupForm");
+            if (form.style.display === "none") {
+                form.style.display = "block";
+            } else {
+                form.style.display = "none";
+            }
+        }
+
+        function addMember() {
+            let memberEmail = document.getElementById("memberEmail").value;
+            let memberId = document.getElementById("memberId").value;
+            let memberList = document.getElementById("memberList");
+            let newMember = document.createElement("p");
+            newMember.textContent = memberEmail;
+            memberList.appendChild(newMember);
+            document.getElementById("memberEmail").value = '';
+            document.getElementById("memberId").value = '';
+
+            const token = localStorage.getItem('token')
+            const obj ={memberEmail,memberId}
+        }
         async function getNewChats(lastChatId) {
             const token = localStorage.getItem('token');
             const url = 'http://localhost:3000/chat/getchats?lastChatId=' + lastChatId;
@@ -90,14 +156,38 @@
             updateChats(recentChats);
                 
         }
+        async function fetchGroups() {
+            const token = localStorage.getItem('token');
+            try {
+                const response = await axios.get('http://localhost:3000/user/get-groups', {
+                    headers: {
+                        'Authorization': token
+                    }
+                });
+                console.log(response,'from fetch groupp')
+                const groups = response.data;
+                const groupList = document.getElementById('groupList');
+                groupList.innerHTML = '';
+                groups.forEach(group => {
+                    const li = document.createElement('li');
+                    li.textContent = group.groupName;
+                    li.onclick = () => showGroup(group); // Show group details on click
+                    groupList.appendChild(li);
+                });
+            } catch (error) {
+                console.error('Failed to fetch groups:', error);
+            }
+        }
     
-    
-        window.onload = initial;
+        window.onload = () => {
+            initial();
+            fetchGroups();
+        };
         setInterval(() => {
             const storedChats = retrieveChats();
             const lastChatId = storedChats.length > 0 ? storedChats[storedChats.length - 1].id : 0;
             getNewChats(lastChatId);
-        }, 5000);
+        }, 60000);
 
             
     </script>
