@@ -192,6 +192,7 @@
         </form>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/axios@1.1.2/dist/axios.min.js"></script>
+    
     <script>
         function createGroup(){
             const obj={groupName:document.getElementById('groupName').value}
@@ -203,6 +204,8 @@
                     // Add logic to update group list
                     // You may need to call a function to fetch and populate group list here
                     fetchGroups()
+                    document.getElementById('createGroupForm').style.display = 'none';
+                    document.getElementById('groupName').value=''
                 }).catch(e=>{
                     console.log(e)
                 })
@@ -308,6 +311,7 @@
                     li.textContent = group.groupName;
                     li.onclick = () => {
                         localStorage.setItem('gId',group.id)
+                        localStorage.removeItem('chats')
                         window.location.href = '/groupchat.htm'
                     };
                     groupList.appendChild(li);
@@ -332,14 +336,13 @@
         }
     
         window.onload = () => {
-            initial();
             fetchGroups();
         };
-        setInterval(() => {
-            const storedChats = retrieveChats();
-            const lastChatId = storedChats.length > 0 ? storedChats[storedChats.length - 1].id : 0;
-            getNewChats(lastChatId);
-        }, 10000);
+        //setInterval(() => {
+        //    const storedChats = retrieveChats();
+        //    const lastChatId = storedChats.length > 0 ? storedChats[storedChats.length - 1].id : 0;
+         //   getNewChats(lastChatId);
+        //}, 10000);
 
             
     </script>

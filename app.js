@@ -12,6 +12,7 @@ const sequelize  = require('./util/database')
 const User = require('./model/userModel')
 const Chat =require('./model/chatModel')
 const Group =require('./model/groupModel')
+const UserGroup =require('./model/userGroupModel')
 
 const userRoute=require('./route/userRoute')
 const chatRoute=require('./route/chatRoute')

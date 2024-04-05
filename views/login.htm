@@ -56,11 +56,10 @@
                     console.log(res);
                     if (res.data.success === true) {
                         alert('Login successfully');
+                        localStorage.clear()
                         localStorage.setItem('token', res.data.token);
                         localStorage.setItem('email', res.data.email);
-                        if (localStorage.getItem('chats')){
-                            localStorage.removeItem('chats')
-                        }
+                        
                         window.location.href = '/chat_app.htm';
                     }
                 })

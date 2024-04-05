@@ -97,22 +97,52 @@
   #send-button:hover {
     background-color: #0056b3;
   }
+  .member-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 5px 0;
+    border-bottom: 1px solid #ccc;
+  }
+  
+  .button-container {
+    display: flex;
+    gap: 10px;
+  }
+  
+  .button-container button {
+    padding: 5px 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .button-container button:hover {
+    background-color: #ccc;
+  }
+  
+
+
+
 </style>
 </head>
 <body>
-<div class="container">
-  <h1>Group Chat</h1>
-  <button id="add-member-button">Add Member</button>
-  <form id="add-member-form">
-    <input type="email" id="add-member-input" placeholder="Enter Email ID">
-    <button type="submit">Add</button>
-  </form>
-  <div id="chat-box"></div>
-  <form id="message-form">
-    <input type="text" id="message-input" placeholder="Type your message...">
-    <button type="submit" id="send-button">Send</button>
-  </form>
-</div>
+  <div class="container">
+    <h1>Group Chat</h1>
+    <button id="add-member-button">Add Member</button>
+    <form id="add-member-form">
+      <input type="email" id="add-member-input" placeholder="Enter Email ID">
+      <button type="submit">Add</button>
+    </form>
+    <div id="members-list"></div>
+    <button id="get-members-button">Get Members</button>
+    <div id="chat-box"></div>
+    <form id="message-form">
+      <input type="text" id="message-input" placeholder="Type your message...">
+      <button type="submit" id="send-button">Send</button>
+    </form>
+  </div>
 
 <script src="https://cdn.jsdelivr.net/npm/axios@1.1.2/dist/axios.min.js"></script>
 <script>
@@ -123,6 +153,97 @@
   const addMemberForm = document.getElementById('add-member-form');
   const addMemberInput = document.getElementById('add-member-input');
   const addMemberButton = document.getElementById('add-member-button');
+  const membersList = document.getElementById('members-list');
+  const getMembersButton = document.getElementById('get-members-button')
+
+  getMembersButton.addEventListener('click', () => {
+    const gid=localStorage.getItem('gId')
+    const token=localStorage.getItem('token')
+    const url ='http://localhost:3000/user/get-all-group-users'+'?gid='+gid
+    axios.get(url,{ headers: { 'Authorization': token} })
+      .then(res=>{
+        console.log(res,'users')
+        displayMembers(res.data.users);
+      }).catch(error => console.error('Error getting members:', error));
+  });
+
+  function displayMembers(members) {
+    membersList.innerHTML = '';
+    members.forEach(member => {
+      const memberItem = document.createElement('div');
+      memberItem.classList.add('member-item'); 
+      memberItem.textContent = member.name;
+  
+      const buttonContainer = document.createElement('div');
+      buttonContainer.classList.add('button-container'); 
+  
+      const removeButton = document.createElement('button');
+      removeButton.textContent = 'Remove';
+      removeButton.onclick = function() {
+        removeMember(member.mobileNumber);
+      };
+  
+      const makeAdminButton = document.createElement('button');
+      makeAdminButton.textContent = 'Make Admin';
+      makeAdminButton.onclick = function() {
+        makeAdmin(member.mobileNumber);
+      };
+  
+      const removeAdminButton = document.createElement('button');
+      removeAdminButton.textContent = 'Remove Admin';
+      removeAdminButton.onclick = function() {
+        removeAdmin(member.mobileNumber);
+      };
+  
+      buttonContainer.appendChild(removeButton);
+      buttonContainer.appendChild(makeAdminButton);
+      buttonContainer.appendChild(removeAdminButton);
+  
+      memberItem.appendChild(buttonContainer);
+      membersList.appendChild(memberItem);
+    });
+  }
+  
+  
+  
+
+  async function removeMember(memberId) {
+    const gid=localStorage.getItem('gId')
+    const token=localStorage.getItem('token')
+    const url ='http://localhost:3000/user/remove-user'+'?memberId='+memberId
+    await axios.delete(url,{headers:{'Authorization':token,'gId':gid}})
+      .then(res=>{
+        console.log(res)
+      }).catch(e=>{
+        console.log(e)
+      })
+  }
+
+  function makeAdmin(memberId) {
+    const gid=localStorage.getItem('gId')
+    const token=localStorage.getItem('token')
+    const url ='http://localhost:3000/user/make-admin'+'?memberId='+memberId
+    axios.post(url,{memberId},{headers:{'Authorization':token,'gId':gid}})
+      .then(res=>{
+        console.log(res)
+      }).catch(e=>{
+        console.log(e)
+      })
+    
+  }
+
+  function removeAdmin(memberId) {
+    const gid=localStorage.getItem('gId')
+    const token=localStorage.getItem('token')
+    const url ='http://localhost:3000/user/remove-admin'+'?memberId='+memberId
+    axios.post(url,{memberId},{headers:{'Authorization':token,'gId':gid}})
+      .then(res=>{
+        console.log(res)
+      }).catch(e=>{
+        console.log(e)
+      })
+    console.log('Removing admin from member with ID:', memberId);
+  }
 
   function addMessage(message, sender, isCurrentUser) {
     const newMessage = document.createElement('div');
@@ -229,11 +350,7 @@
   window.onload = () => {
     initial()
 };
-setInterval(() => {
-  const storedChats = retrieveChats();
-  const lastChatId = storedChats.length > 0 ? storedChats[storedChats.length - 1].id : 0;
-  receiveMessage(lastChatId);
-}, 2000);
+
     </script>
   </body>
   </html>
