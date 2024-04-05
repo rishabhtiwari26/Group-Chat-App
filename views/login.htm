@@ -57,7 +57,7 @@
                     if (res.data.success === true) {
                         alert('Login successfully');
                         localStorage.setItem('token', res.data.token);
-                        localStorage.setItem('name', res.data.userName);
+                        localStorage.setItem('email', res.data.email);
                         if (localStorage.getItem('chats')){
                             localStorage.removeItem('chats')
                         }

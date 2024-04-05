@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Group Chat</title>
+<style>
+  /* Styles remain the same */
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>Group Chat</h1>
+  <button id="add-member-button">Add Member</button>
+  <form id="add-member-form">
+    <input type="email" id="add-member-input" placeholder="Enter Email ID">
+    <button type="submit">Add</button>
+  </form>
+  <div id="chat-box"></div>
+  <form id="message-form">
+    <input type="text" id="message-input" placeholder="Type your message...">
+    <button type="submit" id="send-button">Send</button>
+  </form>
+</div>
+
+<script>
+  const chatBox = document.getElementById('chat-box');
+  const messageInput = document.getElementById('message-input');
+  const sendButton = document.getElementById('send-button');
+  const messageForm = document.getElementById('message-form');
+  const addMemberForm = document.getElementById('add-member-form');
+  const addMemberInput = document.getElementById('add-member-input');
+  const addMemberButton = document.getElementById('add-member-button');
+
+  // Function to add a message to the chat box
+  function addMessage(message, sender) {
+    const newMessage = document.createElement('div');
+    newMessage.textContent = `${sender}: ${message}`;
+    chatBox.appendChild(newMessage);
+    chatBox.scrollTop = chatBox.scrollHeight; // Auto scroll to bottom
+  }
+
+  // Function to send message to the server
+  function sendMessage(message) {
+    fetch('http://localhost:3000/send-message', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ message: message })
+    })
+    .then(response => response.json())
+    .then(data => console.log('Message sent:', data))
+    .catch(error => console.error('Error sending message:', error));
+  }
+
+  // Function to receive messages from the server
+  function receiveMessage() {
+    fetch('http://localhost:3000/get-messages')
+    .then(response => response.json())
+    .then(messages => {
+      messages.forEach(msg => {
+        addMessage(msg.message, msg.sender);
+      });
+    })
+    .catch(error => console.error('Error receiving messages:', error));
+  }
+
+  // Event listener for message form submission
+  messageForm.addEventListener('submit', function(event) {
+    event.preventDefault(); // Prevent form submission
+    const message = messageInput.value.trim();
+    if (message !== '') {
+      addMessage(message, 'You');
+      sendMessage(message);
+      messageInput.value = ''; // Clear the input field
+    }
+  });
+
+  // Event listener for add member button
+  addMemberButton.addEventListener('click', function() {
+    addMemberForm.style.display = addMemberForm.style.display === 'none' ? 'block' : 'none';
+  });
+
+  // Function to add a member
+  function addMember(email) {
+    fetch('http://localhost:3000/add-member', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ email: email })
+    })
+    .then(response => response.json())
+    .then(data => console.log('Member added:', data))
+    .catch(error => console.error('Error adding member:', error));
+  }
+
+  // Event listener for add member form submission
+  addMemberForm.addEventListener('submit', function(event) {
+    event.preventDefault(); // Prevent form submission
+    const email = addMemberInput.value.trim();
+    if (email !== '') {
+      addMember(email);
+      addMemberInput.value = ''; // Clear the input field
+      addMemberForm.style.display = 'none'; // Hide the form after submission
+    }
+  });
+
+  // Call receiveMessage function to load existing messages
+  receiveMessage();
+</script>
+</body>
+</html>

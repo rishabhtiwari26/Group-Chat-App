@@ -9,8 +9,8 @@ const path=require('path')
 
 const sequelize  = require('./util/database')
 
-const user = require('./model/userModel')
-const chat =require('./model/chatModel')
+const User = require('./model/userModel')
+const Chat =require('./model/chatModel')
 const Group =require('./model/groupModel')
 
 const userRoute=require('./route/userRoute')
@@ -35,15 +35,18 @@ app.use('/signup.htm', (req, res) => {
 app.use('/chat_app.htm', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'chat_app.htm'));
 });
+app.use('/groupchat.htm', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'groupchat.htm'));
+});
 
-user.hasMany(chat)
-chat.belongsTo(user,{constraint:true,onDelete:'CASCADE'})
+User.hasMany(Chat)
+Chat.belongsTo(User,{constraint:true,onDelete:'CASCADE'})
 
-Group.hasMany(chat);
-chat.belongsTo(Group);
+Group.hasMany(Chat);
+Chat.belongsTo(Group);
 
-user.belongsToMany(Group, { through: 'UserGroup' });
-Group.belongsToMany(user, { through: 'UserGroup' })
+User.belongsToMany(Group, { through: 'UserGroup' });
+Group.belongsToMany(User, { through: 'UserGroup' })
 
 sequelize.sync()
     .then(res=>{

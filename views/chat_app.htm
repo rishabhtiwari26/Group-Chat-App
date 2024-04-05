@@ -5,39 +5,159 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chat App</title>
     <style>
-        #createGroupForm {
-            display: none;
-          }
-          #groupListContainer {
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        
+        h2 {
+            text-align: center;
+            margin-top: 20px;
+        }
+        
+        #groupListContainer {
             width: 200px;
             float: left;
-          }
-          #groupList {
+            margin-left: 20px;
+        }
+        
+        #groupList {
             list-style-type: none;
             padding: 0;
-          }
-          #groupList li {
+        }
+        
+        #groupList li {
             margin-bottom: 5px;
             cursor: pointer;
-          }
-          #groupList li:hover {
-            background-color: lightgray;
-          }
-        #createGroupForm{
-            position: fixed;
-            top: 30px;
-            right: 10px;
+            padding: 5px;
+            border-radius: 5px;
         }
-        #createGroupButton{
+        
+        #groupList li:hover {
+            background-color: lightgray;
+        }
+        
+        #chatUL {
+            list-style-type: none;
+            padding: 0;
+            margin-top: 20px;
+            margin-left: 240px;
+        }
+        
+        #chatUL li {
+            margin-bottom: 5px;
+            background-color: #fff;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        
+        #createGroupButton {
             position: fixed;
             top: 10px;
-            right: 10px;
+            right: 20px;
+            padding: 10px 20px;
+            background-color: #28a745;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+        
+        #createGroupButton:hover {
+            background-color: #218838;
+        }
+        
+        #createGroupForm {
+            display: none;
+            position: fixed;
+            top: 50px;
+            right: 20px;
+            padding: 20px;
+            background-color: #f9f9f9;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+        }
+        
+        #createGroupForm label {
+            display: block;
+            margin-bottom: 10px;
+        }
+        
+        #createGroupForm input[type="text"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+        
+        #memberList p {
+            margin-bottom: 5px;
+        }
+        
+        #createGroupForm button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+        
+        #createGroupForm button:hover {
+            background-color: #0056b3;
+        }
+        
+        #addMemberForm {
+            display: none;
+            position: fixed;
+            top: 100px;
+            right: 20px;
+            padding: 20px;
+            background-color: #f9f9f9;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+        }
+        
+        #addMemberForm label {
+            display: block;
+            margin-bottom: 10px;
+        }
+        
+        #addMemberForm input[type="email"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+        
+        #addMemberForm button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+        
+        #addMemberForm button:hover {
+            background-color: #0056b3;
         }
     </style>
 </head>
 <body>
     <h2>Chat App</h2>
-    <p></p>
     <div id="groupListContainer">
         <h3>Groups</h3>
         <ul id="groupList">
@@ -63,6 +183,14 @@
     <ul id="chatUL" class="chatClass">
         
     </ul>
+    <div id="addMemberForm">
+        <h3>Add Members</h3>
+        <form>
+            <label for="memberEmail">Member Email:</label>
+            <input type="email" id="memberEmail" name="memberEmail" required><br><br>
+            <button type="button" onclick="addMember()">Add Member</button>
+        </form>
+    </div>
     <script src="https://cdn.jsdelivr.net/npm/axios@1.1.2/dist/axios.min.js"></script>
     <script>
         function createGroup(){
@@ -133,7 +261,6 @@
 
         function addMember() {
             let memberEmail = document.getElementById("memberEmail").value;
-            let memberId = document.getElementById("memberId").value;
             let memberList = document.getElementById("memberList");
             let newMember = document.createElement("p");
             newMember.textContent = memberEmail;
@@ -142,11 +269,19 @@
             document.getElementById("memberId").value = '';
 
             const token = localStorage.getItem('token')
-            const obj ={memberEmail,memberId}
+            const obj ={memberEmail}
+            axios.post('http://localhost:3000/user/add-members',obj,{ headers: { 'Authorization': token } })
+                .then()
         }
-        async function getNewChats(lastChatId) {
+        async function getNewChats(lastChatId,groupId) {
             const token = localStorage.getItem('token');
-            const url = 'http://localhost:3000/chat/getchats?lastChatId=' + lastChatId;
+
+            let url = 'http://localhost:3000/chat/getchats?lastChatId=' + lastChatId;
+
+            if (groupId) {
+                url += '&groupId=' + groupId;
+            }
+
             const res= await axios.get(url, { headers: { 'Authorization': token } })
             const storedChats = retrieveChats();
             const newChats = res.data;
@@ -171,11 +306,28 @@
                 groups.forEach(group => {
                     const li = document.createElement('li');
                     li.textContent = group.groupName;
-                    li.onclick = () => showGroup(group); // Show group details on click
+                    li.onclick = () => {
+                        localStorage.setItem('gId',group.id)
+                        window.location.href = '/groupchat.htm'
+                    };
                     groupList.appendChild(li);
                 });
             } catch (error) {
                 console.error('Failed to fetch groups:', error);
+            }
+        }
+        async function showGroup(group) {
+            const token = localStorage.getItem('token');
+            try {
+                const response = await axios.get(`http://localhost:3000/chat/group-chats/${group.id}`, {
+                    headers: {
+                        'Authorization': token
+                    }
+                });
+                const chats = response.data;
+                updateChats(chats);
+            } catch (error) {
+                console.error('Failed to fetch chats for group:', error);
             }
         }
     
@@ -187,7 +339,7 @@
             const storedChats = retrieveChats();
             const lastChatId = storedChats.length > 0 ? storedChats[storedChats.length - 1].id : 0;
             getNewChats(lastChatId);
-        }, 60000);
+        }, 10000);
 
             
     </script>

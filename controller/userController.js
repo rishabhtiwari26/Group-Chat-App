@@ -1,4 +1,5 @@
 const User = require('../model/userModel')
+const Group=require('../model/groupModel')
 const bcrypt = require('bcrypt')
 const jwt =require('jsonwebtoken')
 function generateAccessToken(id){
@@ -46,7 +47,7 @@ exports.login=(req,res,next)=>{
                         throw new Error(err)
                     }
                     if(result===true){
-                        res.status(200).send({success:true,message:'User Login successfully',redirectUrl: '/chat/chat_app',token:generateAccessToken(user.id),userName:user.name})
+                        res.status(200).send({success:true,message:'User Login successfully',redirectUrl: '/chat/chat_app',token:generateAccessToken(user.id),email:user.email})
                     }
                     else{
                         res.status(401).send({success:false,message:'Password do not match'})
@@ -74,3 +75,25 @@ exports.getGroups=async (req,res,next)=>{
         console.log(err);
       }
     };
+
+exports.addMember = async (req, res, next) => {
+    let userEmail = req.body.email;
+    const group = req.group;
+    const user = req.user;
+    console.log(userEmail, 'userEmail', group, 'group', user, 'user');
+    // console.log(Object.keys(group.__proto__));
+    try {
+        const foundUser = await User.findOne({
+            where: { email: userEmail }
+        });
+        if (foundUser) {
+            await group.addUserDetail(foundUser);
+            res.status(200).send("User added to the group successfully.");
+        } else {
+            res.status(404).send("User not found.");
+        }
+    } catch (error) {
+        console.log(error);
+        res.status(500).send("Internal Server Error");
+    }
+};
