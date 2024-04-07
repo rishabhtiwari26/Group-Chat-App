@@ -121,7 +121,44 @@
   .button-container button:hover {
     background-color: #ccc;
   }
-  
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f4;
+  }
+  #logout-button {
+    padding: 10px 20px;
+    background-color: #dc3545;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+    position: fixed;
+    top: 20px;
+    right: 20px;
+  }
+
+  #logout-button:hover {
+    background-color: #c82333;
+  }
+  #get-members-button {
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+    margin-bottom: 10px; /* Added margin to match other buttons */
+}
+
+#get-members-button:hover {
+    background-color: #0056b3;
+}
 
 
 
@@ -129,7 +166,7 @@
 </head>
 <body>
   <div class="container">
-    <h1>Group Chat</h1>
+    <h1 id="heading-h1">Group Chat</h1>
     <button id="add-member-button">Add Member</button>
     <form id="add-member-form">
       <input type="email" id="add-member-input" placeholder="Enter Email ID">
@@ -142,6 +179,7 @@
       <input type="text" id="message-input" placeholder="Type your message...">
       <button type="submit" id="send-button">Send</button>
     </form>
+    <button id="logout-button">Logout</button>
   </div>
 
 <script src="https://cdn.jsdelivr.net/npm/axios@1.1.2/dist/axios.min.js"></script>
@@ -156,61 +194,89 @@
   const membersList = document.getElementById('members-list');
   const getMembersButton = document.getElementById('get-members-button')
 
-  getMembersButton.addEventListener('click', () => {
-    const gid=localStorage.getItem('gId')
-    const token=localStorage.getItem('token')
-    const url ='http://localhost:3000/user/get-all-group-users'+'?gid='+gid
-    axios.get(url,{ headers: { 'Authorization': token} })
-      .then(res=>{
-        console.log(res,'users')
-        displayMembers(res.data.users);
-      }).catch(error => console.error('Error getting members:', error));
+  document.getElementById('logout-button').addEventListener('click', function() {
+    const confirmLogout = confirm('Are you sure you want to log out?');
+    if (confirmLogout) {
+      // Clear local storage and redirect to login page
+      localStorage.clear();
+      window.location.href = 'login.htm';
+    }
   });
 
-  function displayMembers(members) {
-    membersList.innerHTML = '';
-    members.forEach(member => {
+  getMembersButton.addEventListener('click', () => {
+    const gid = localStorage.getItem('gId');
+    const token = localStorage.getItem('token');
+    const url = 'http://localhost:3000/user/get-all-group-users' + '?gid=' + gid;
+    axios.get(url, { headers: { 'Authorization': token } })
+        .then(res => {
+            console.log(res, 'users');
+            displayMembers(res.data.users);
+            const loggedInUserEmail = localStorage.getItem('email');
+            const isAdmin = res.data.users.find(user => user.email === loggedInUserEmail).isAdmin;
+            console.log(isAdmin,'isAdmin')
+            showAdminButtons(isAdmin);
+        })
+        .catch(error => console.error('Error getting members:', error));
+});
+
+
+function displayMembers(members) {
+  membersList.innerHTML = '';
+  const loggedInUserEmail = localStorage.getItem('email');
+  const loggedInUserIsAdmin = members.find(user => user.email === loggedInUserEmail).isAdmin;
+
+  members.forEach(member => {
       const memberItem = document.createElement('div');
-      memberItem.classList.add('member-item'); 
+      memberItem.classList.add('member-item');
       memberItem.textContent = member.name;
-  
+
       const buttonContainer = document.createElement('div');
-      buttonContainer.classList.add('button-container'); 
-  
-      const removeButton = document.createElement('button');
-      removeButton.textContent = 'Remove';
-      removeButton.onclick = function() {
-        removeMember(member.mobileNumber);
-      };
-  
-      const makeAdminButton = document.createElement('button');
-      makeAdminButton.textContent = 'Make Admin';
-      makeAdminButton.onclick = function() {
-        makeAdmin(member.mobileNumber);
-      };
-  
-      const removeAdminButton = document.createElement('button');
-      removeAdminButton.textContent = 'Remove Admin';
-      removeAdminButton.onclick = function() {
-        removeAdmin(member.mobileNumber);
-      };
-  
-      buttonContainer.appendChild(removeButton);
-      buttonContainer.appendChild(makeAdminButton);
-      buttonContainer.appendChild(removeAdminButton);
-  
+      buttonContainer.classList.add('button-container');
+
+      // If the logged-in user is an admin, show the "Remove" button for all members
+      if (loggedInUserIsAdmin) {
+          const removeButton = document.createElement('button');
+          removeButton.textContent = 'Remove';
+          removeButton.onclick = function () {
+              removeMember(member.email);
+          };
+          buttonContainer.appendChild(removeButton);
+      }
+
+      // If the logged-in user is an admin and the current member is not an admin, show the "Make Admin" button
+      if (loggedInUserIsAdmin && !member.isAdmin) {
+          const makeAdminButton = document.createElement('button');
+          makeAdminButton.textContent = 'Make Admin';
+          makeAdminButton.onclick = function () {
+              makeAdmin(member.email);
+          };
+          buttonContainer.appendChild(makeAdminButton);
+      } 
+      // If the logged-in user is an admin and the current member is an admin, show the "Remove Admin" button
+      else if (loggedInUserIsAdmin && member.isAdmin) {
+          const removeAdminButton = document.createElement('button');
+          removeAdminButton.textContent = 'Remove Admin';
+          removeAdminButton.onclick = function () {
+              removeAdmin(member.email);
+          };
+          buttonContainer.appendChild(removeAdminButton);
+      }
+
       memberItem.appendChild(buttonContainer);
       membersList.appendChild(memberItem);
-    });
-  }
+  });
+}
+
+
+
   
   
   
 
-  async function removeMember(memberId) {
+  async function removeMember(email) {
     const gid=localStorage.getItem('gId')
     const token=localStorage.getItem('token')
-    const url ='http://localhost:3000/user/remove-user'+'?memberId='+memberId
+    const url ='http://localhost:3000/user/remove-user'+'?email='+email
     await axios.delete(url,{headers:{'Authorization':token,'gId':gid}})
       .then(res=>{
         console.log(res)
@@ -219,11 +285,11 @@
       })
   }
 
-  function makeAdmin(memberId) {
+  function makeAdmin(email) {
     const gid=localStorage.getItem('gId')
     const token=localStorage.getItem('token')
-    const url ='http://localhost:3000/user/make-admin'+'?memberId='+memberId
-    axios.post(url,{memberId},{headers:{'Authorization':token,'gId':gid}})
+    const url ='http://localhost:3000/user/make-admin'+'?email='+email
+    axios.post(url,{email},{headers:{'Authorization':token,'gId':gid}})
       .then(res=>{
         console.log(res)
       }).catch(e=>{
@@ -232,17 +298,17 @@
     
   }
 
-  function removeAdmin(memberId) {
+  function removeAdmin(email) {
     const gid=localStorage.getItem('gId')
     const token=localStorage.getItem('token')
-    const url ='http://localhost:3000/user/remove-admin'+'?memberId='+memberId
-    axios.post(url,{memberId},{headers:{'Authorization':token,'gId':gid}})
+    const url ='http://localhost:3000/user/remove-admin'+'?email='+email
+    axios.post(url,{email},{headers:{'Authorization':token,'gId':gid}})
       .then(res=>{
         console.log(res)
       }).catch(e=>{
         console.log(e)
       })
-    console.log('Removing admin from member with ID:', memberId);
+    console.log('Removing admin from member with ID:', email);
   }
 
   function addMessage(message, sender, isCurrentUser) {
@@ -306,7 +372,13 @@
     const memberStatus=await axios.post('http://localhost:3000/user/add-member',{email},{ headers: { 'Authorization': token,'gId':groupId } })
     console.log(memberStatus)
   }
-  
+  function showAdminButtons(isAdmin) {
+    if (isAdmin) {
+        document.getElementById('add-member-button').style.display = 'block';
+    } else {
+        document.getElementById('add-member-button').style.display = 'none';
+    }
+}
   function initial() {
     const storedChats = retrieveChats();
     const userEmail = localStorage.getItem('email');
@@ -348,8 +420,26 @@
   
       
   window.onload = () => {
+    document.getElementById('heading-h1').innerText=localStorage.getItem('group-name')
+    localStorage.removeItem('group-name')
     initial()
-};
+    const gid = localStorage.getItem('gId');
+    const token = localStorage.getItem('token');
+    const url = 'http://localhost:3000/user/get-all-group-users' + '?gid=' + gid;
+    axios.get(url, { headers: { 'Authorization': token } })
+        .then(res => {
+            const loggedInUserEmail = localStorage.getItem('email');
+            const isAdmin = res.data.users.find(user => user.email === loggedInUserEmail).isAdmin;
+            showAdminButtons(isAdmin);
+        })
+        .catch(error => console.error('Error getting user info:', error));
+
+}
+setInterval(() => {
+  const storedChats = retrieveChats();
+  const lastChatId = storedChats.length > 0 ? storedChats[storedChats.length - 1].id : 0;
+  receiveMessage(lastChatId);
+}, 2000);
 
     </script>
   </body>

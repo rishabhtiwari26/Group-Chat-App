@@ -71,7 +71,17 @@ exports.getGroups=async (req,res,next)=>{
     try {
         console.log('inside group controller')
         const userGroups = await user.getGroups();
-        res.status(201).json(userGroups);
+        const groupsWithAdmin=[]
+        for(const group of userGroups){
+
+            const groups = {
+                id: group.id,
+                name: group.groupName
+            };
+            groupsWithAdmin.push(groups);
+        }
+        
+        res.status(201).json(groupsWithAdmin);
       } catch (err) {
         console.log(err);
       }
@@ -105,34 +115,48 @@ exports.makeAdmin=(req,res,next)=>{
 
 exports.getAllGroupUsers = async (req, res, next) => {
     try {
-        console.log('inside,getallgusers',req.query)
+        console.log('inside, getAllGroupUsers', req.query);
         const groupId = req.query.gid;
 
         const group = await Group.findOne({ where: { id: groupId } });
         if (!group) throw new Error("No such group");
-        // console.log(Object.keys(group.__proto__));
-        const users = await group.getUserDetails({
-            attributes: ['name','mobileNumber']
-        });
-        res.status(200).json({ users });
 
-    } catch (err) {
-        console.log(err);
-        res.status(500).json({ msg: 'Something Went Wrong' });
+        const users = await group.getUserDetails({
+            attributes: ['name', 'email'],
+            through: { attributes: ['isAdmin'] }
+          });
+          const usersWithIsAdmin = users.map(user => ({
+            name: user.name,
+            email: user.email,
+            isAdmin: user.UserGroup.isAdmin
+        }));
+
+        
+
+        if (!users) {
+            return res.status(404).json({ msg: 'No users found in the group' });
+        }
+
+        console.log(usersWithIsAdmin);
+        res.status(200).json({ users: usersWithIsAdmin });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ success: false, msg: 'Internal Server Error' });
     }
 }
 
+
 exports.removeUser = async (req, res, next) => {
     try {
-        const userMobile=req.query.memberId
+        const useremail=req.query.email
         const group = req.group
         const user=req.user
         if (!group) {
             return res.status(409).json({ msg: 'There is no group exist' })
         }
-        const member = await User.findOne({ where: { mobileNumber:userMobile} });
+        const member = await User.findOne({ where: { email:useremail} });
         
-        if (user.dataValues.mobileNumber == userMobile) {
+        if (user.dataValues.email == useremail) {
             return res.status(408).json({ message: "Admin cannot remove themselves from the group" })
         }
 
@@ -147,12 +171,12 @@ exports.removeUser = async (req, res, next) => {
 
 exports.makeAdmin = async (req, res, next) => {
     try {
-        const userMobile = req.body.memberId;
+        const useremail = req.body.email;
         const group = req.group
         if (!group) {
             return res.status(409).json({ success: false, message: 'No group exist' })
         }
-        const member=await User.findOne({ where: { mobileNumber:userMobile}})
+        const member=await User.findOne({ where: { email:useremail}})
         console.log(member,'member')
         const UserGroupAdmin = await UserGroup.findOne({ where: { userDetailId: member.id, groupId: group.id } });
         console.log(UserGroupAdmin,'UserGroupAdmin')
@@ -171,13 +195,17 @@ exports.makeAdmin = async (req, res, next) => {
 
 exports.removeAdmin = async (req, res, next) => {
     try {
-        const userMobile = req.body.memberId;
+        const useremail = req.body.email;
         const group = req.group
+        const user=req.user
         if (!group) {
             return res.status(409).json({ success: false, message: 'No group exist' })
         }
-        const member=await User.findOne({ where: { mobileNumber:userMobile}})
+        const member=await User.findOne({ where: { email:useremail}})
         const UserGroupAdmin = await UserGroup.findOne({ where: { userDetailId: member.id, groupId: group.id } });
+        if(UserGroupAdmin.dataValues.userDetailId==user.id){
+            return res.status(408).json({ success: false, message: "Admin cannot remove their admin status" })
+        }
         console.log(UserGroupAdmin,'UserGroupAdmin')
         if (!UserGroupAdmin) {
             return res.status(409).json({ success: false, message: 'No member exist ' })

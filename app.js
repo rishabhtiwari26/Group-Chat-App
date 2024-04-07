@@ -13,9 +13,11 @@ const User = require('./model/userModel')
 const Chat =require('./model/chatModel')
 const Group =require('./model/groupModel')
 const UserGroup =require('./model/userGroupModel')
+const PasswordLink=require('./model/forgetPasswordModel')
 
 const userRoute=require('./route/userRoute')
 const chatRoute=require('./route/chatRoute')
+const passwordRoute=require('./route/passwordRoute')
 
 app.use(bodyParser.json())
 app.use(cors({
@@ -26,6 +28,7 @@ app.use(cors({
 
 app.use('/user',userRoute)
 app.use('/chat',chatRoute)
+app.use('/password',passwordRoute)
 
 app.use('/login.htm', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'login.htm'));
@@ -39,6 +42,12 @@ app.use('/chat_app.htm', (req, res) => {
 app.use('/groupchat.htm', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'groupchat.htm'));
 });
+app.use('/reset_password.htm', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'reset_password.htm'));
+});
+app.use('/forgetpassword.htm', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'forgetPassword.htm'));
+});
 
 User.hasMany(Chat)
 Chat.belongsTo(User,{constraint:true,onDelete:'CASCADE'})
@@ -48,6 +57,12 @@ Chat.belongsTo(Group);
 
 User.belongsToMany(Group, { through: 'UserGroup' });
 Group.belongsToMany(User, { through: 'UserGroup' })
+
+UserGroup.belongsTo(User);
+UserGroup.belongsTo(Group)
+
+User.hasMany(PasswordLink)
+PasswordLink.belongsTo(User,{constraint:true,onDelete:'CASCADE'})
 
 sequelize.sync()
     .then(res=>{

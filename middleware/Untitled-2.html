@@ -112,3 +112,45 @@
 </script>
 </body>
 </html>
+
+
+
+
+
+setInterval(() => {
+  const storedChats = retrieveChats();
+  const lastChatId = storedChats.length > 0 ? storedChats[storedChats.length - 1].id : 0;
+  receiveMessage(lastChatId);
+}, 2000);
+
+function displayMembers(members) {
+  membersList.innerHTML = ''; // Clear the list first
+  members.forEach(member => {
+    const memberItem = document.createElement('div');
+    memberItem.textContent = member.name;
+    
+    const removeButton = document.createElement('button');
+    removeButton.textContent = 'Remove';
+    removeButton.addEventListener('click', () => {
+      removeMember(member.mobileNumber); // Call removeMember function when button is clicked
+    });
+
+    const makeAdminButton = document.createElement('button');
+    makeAdminButton.textContent = 'Make Admin';
+    makeAdminButton.addEventListener('click', () => {
+      makeAdmin(member.mobileNumber); // Call makeAdmin function when button is clicked
+    });
+    const removeAdminButton = document.createElement('button');
+    removeAdminButton.textContent = 'Remove Admin';
+    removeAdminButton.addEventListener('click', () => {
+      removeAdmin(member.mobileNumber ); // Call removeAdmin function when button is clicked
+    });
+
+    memberItem.appendChild(removeButton);
+    memberItem.appendChild(makeAdminButton);
+
+    membersList.appendChild(memberItem);
+    memberItem.appendChild(removeAdminButton);
+  });
+
+}

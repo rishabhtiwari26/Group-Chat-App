@@ -56,7 +56,7 @@
         #createGroupButton {
             position: fixed;
             top: 10px;
-            right: 20px;
+            right: 100px;
             padding: 10px 20px;
             background-color: #28a745;
             color: #fff;
@@ -154,10 +154,29 @@
         #addMemberForm button:hover {
             background-color: #0056b3;
         }
+        #logoutButton {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            padding: 10px 20px;
+            background-color: #dc3545;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+        
+        #logoutButton:hover {
+            background-color: #c82333;
+        }
+        
     </style>
 </head>
 <body>
     <h2>Chat App</h2>
+    <button id="logoutButton" onclick="logout()">Logout</button>
     <div id="groupListContainer">
         <h3>Groups</h3>
         <ul id="groupList">
@@ -194,6 +213,14 @@
     <script src="https://cdn.jsdelivr.net/npm/axios@1.1.2/dist/axios.min.js"></script>
     
     <script>
+        function logout() {
+            const confirmLogout = confirm('Are you sure you want to log out?');
+            if (confirmLogout) {
+              // Clear local storage and redirect to login page
+              localStorage.clear();
+              window.location.href = 'login.htm';
+            }
+          };
         function createGroup(){
             const obj={groupName:document.getElementById('groupName').value}
             console.log(obj)
@@ -308,10 +335,15 @@
                 groupList.innerHTML = '';
                 groups.forEach(group => {
                     const li = document.createElement('li');
-                    li.textContent = group.groupName;
+                    li.textContent = group.name;
                     li.onclick = () => {
                         localStorage.setItem('gId',group.id)
+                        localStorage.setItem('group-name',group.name)
                         localStorage.removeItem('chats')
+                        if (localStorage.getItem('email') in group.admins){
+                            localStorage.setItem('admin')
+                        }
+                        
                         window.location.href = '/groupchat.htm'
                     };
                     groupList.appendChild(li);
