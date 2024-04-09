@@ -154,3 +154,25 @@ function displayMembers(members) {
   });
 
 }
+
+sequelize.sync().then(() => {
+  io.on('connection', websocket);
+  httpServer.listen(3000)
+  console.log(`Server is running on port 3000`);
+}).catch(err => {
+  console.log('Server is not running due to internal problem',err);
+})
+and my websocket is 
+
+const socketNew = (socket) => {
+  socket.on('new-common-message', ()=> {
+          socket.broadcast.emit('common-message',"new common message recieved");
+  })
+  socket.on('new-group-message', (groupId,lastChatId)=> {
+      console.log('inSocket',groupId,lastChatId,'groupId,lastChatId')
+          socket.broadcast.emit('group-message',groupId,lastChatId);
+  })
+}
+
+module.exports = socketNew
+and my frontend 

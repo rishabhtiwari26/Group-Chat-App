@@ -136,8 +136,6 @@ exports.getAllGroupUsers = async (req, res, next) => {
         if (!users) {
             return res.status(404).json({ msg: 'No users found in the group' });
         }
-
-        console.log(usersWithIsAdmin);
         res.status(200).json({ users: usersWithIsAdmin });
     } catch (error) {
         console.error(error);

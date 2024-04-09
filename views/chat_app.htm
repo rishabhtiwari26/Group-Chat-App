@@ -211,8 +211,15 @@
         </form>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/axios@1.1.2/dist/axios.min.js"></script>
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+
     
     <script>
+        const socket = io('http://localhost:3000', {
+            auth: {
+                token: localStorage.getItem('token')
+            }
+        })
         function logout() {
             const confirmLogout = confirm('Are you sure you want to log out?');
             if (confirmLogout) {
@@ -340,9 +347,6 @@
                         localStorage.setItem('gId',group.id)
                         localStorage.setItem('group-name',group.name)
                         localStorage.removeItem('chats')
-                        if (localStorage.getItem('email') in group.admins){
-                            localStorage.setItem('admin')
-                        }
                         
                         window.location.href = '/groupchat.htm'
                     };

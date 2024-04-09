@@ -12,12 +12,29 @@ exports.postchat=(req,res,next)=>{
             chat:newChat,
             userDetailId:user.id,
             groupId:group.id
+        }).then(chat=>{
+            const requiredData={
+                id:chat.dataValues.id,
+                chat:chat.dataValues.chat,
+                userDetail:{
+                    name:user.name,
+                    email:user.email
+                }
+            }
+            
+            res.status(200).json(requiredData)
         })
+        .catch(e=>res.json({success:false,message:'something went wrong'}))
+        
     }else{
         chat.create({
             chat:newChat,
             userDetailId:user.id
-        })    
+        }).then(chat=>{
+            const chatId=chat.dataValues.id
+            res.status(200).json({success:true,message:'msg added',chatId})
+        })
+        .catch(e=>res.json({success:false,message:'something went wrong'}))    
     }
 }
 

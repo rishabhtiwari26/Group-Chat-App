@@ -18,6 +18,12 @@ const PasswordLink=require('./model/forgetPasswordModel')
 const userRoute=require('./route/userRoute')
 const chatRoute=require('./route/chatRoute')
 const passwordRoute=require('./route/passwordRoute')
+const websocket=require('./route/websocket')
+
+const httpServer = require('http').createServer(app);
+const io = require('socket.io')(httpServer, {
+    cors: ["http://127.0.0.1:5500"]
+});
 
 app.use(bodyParser.json())
 app.use(cors({
@@ -64,9 +70,10 @@ UserGroup.belongsTo(Group)
 User.hasMany(PasswordLink)
 PasswordLink.belongsTo(User,{constraint:true,onDelete:'CASCADE'})
 
-sequelize.sync()
-    .then(res=>{
-        // console.log(res)
-        app.listen(3000)
-    })
-    .catch(e=>console.log(e))
+sequelize.sync().then(() => {
+    io.on('connection', websocket);
+    httpServer.listen(3000)
+    console.log(`Server is running on port 3000`);
+}).catch(err => {
+    console.log('Server is not running due to internal problem',err);
+})

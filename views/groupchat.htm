@@ -183,7 +183,17 @@
   </div>
 
 <script src="https://cdn.jsdelivr.net/npm/axios@1.1.2/dist/axios.min.js"></script>
+<script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+
 <script>
+  const socket = io('http://localhost:3000', {
+      auth: {
+          token: localStorage.getItem('token')
+      }
+  })
+  socket.on('group-message', (groupId,lastChatId) => {
+    receiveMessage(lastChatId)
+})
   const chatBox = document.getElementById('chat-box');
   const messageInput = document.getElementById('message-input');
   const sendButton = document.getElementById('send-button');
@@ -267,12 +277,6 @@ function displayMembers(members) {
   });
 }
 
-
-
-  
-  
-  
-
   async function removeMember(email) {
     const gid=localStorage.getItem('gId')
     const token=localStorage.getItem('token')
@@ -325,21 +329,36 @@ function displayMembers(members) {
     }
 
   }
-  function sendMessage(message) {
-    const token = localStorage.getItem('token')
-    let obj ={
-        chat:message,
+  
+  async function sendMessage(message) {
+    try {
+        const token = localStorage.getItem('token');
+        const obj = {
+            chat: message,
+        };
+        const groupId = localStorage.getItem('gId');
+        const res = await axios.post('http://localhost:3000/chat/postchat', obj, {
+            headers: {'Authorization': token, 'gId': groupId}
+        });
+        console.log(res)
+        const storedChats = retrieveChats();
+        let lastChatId;
+        if (storedChats.length > 0) {
+            lastChatId = storedChats[storedChats.length - 1].id;
+        } else {
+            lastChatId = 0;
+        }
+        socket.emit('new-group-message', groupId, lastChatId);
+        storeChats([...storedChats, res.data])
+        addMessage(res.data.chat,res.data.userDetail.name,true)
+        console.log('Sent message:', message);
+    } catch (e) {
+        console.log(e);
     }
-    const groupId=localStorage.getItem('gId')
-    axios.post('http://localhost:3000/chat/postchat',obj,{headers:{'Authorization':token,'gId':groupId}})
-        .then(res=>{
-            console.log(res,'gchat sendMessage(message)')
-        }).catch(e=>{
-            console.log(e)
-        })
-    console.log('Sent message:', message);
-  }
+}
+
   async function receiveMessage(lastChatId) {
+    try{
       const token = localStorage.getItem('token');
       const groupId=localStorage.getItem('gId')
       const userEmail=localStorage.getItem('email')
@@ -352,12 +371,15 @@ function displayMembers(members) {
       const recentChats=allChats.slice(-10)
       if (newChats.length>0){
         storeChats(recentChats);
+        console.log(newChats,'newChats in recive function')
         newChats.forEach(chat=>{
           const isCurrentUser = chat.userDetail.email === userEmail;
           addMessage(chat.chat, chat.userDetail.name, isCurrentUser);
         })
       }
-      
+    }catch(err){
+      console.log(err)
+    }    
   }
   
   
@@ -382,6 +404,10 @@ function displayMembers(members) {
   function initial() {
     const storedChats = retrieveChats();
     const userEmail = localStorage.getItem('email');
+    console.log(storedChats,'storeCdhats')
+    if(storedChats.length==0){
+      return receiveMessage(0)
+    }
     storedChats.forEach(chat => {
       const isCurrentUser = chat.userDetail.email === userEmail;
       addMessage(chat.chat, chat.userDetail.name, isCurrentUser);
@@ -400,6 +426,7 @@ function displayMembers(members) {
   messageForm.addEventListener('submit', function(event) {
     event.preventDefault();
     const message = messageInput.value.trim();
+    
     if (message !== '') {
       //addMessage(message, 'You', true);
       sendMessage(message);
@@ -435,11 +462,6 @@ function displayMembers(members) {
         .catch(error => console.error('Error getting user info:', error));
 
 }
-setInterval(() => {
-  const storedChats = retrieveChats();
-  const lastChatId = storedChats.length > 0 ? storedChats[storedChats.length - 1].id : 0;
-  receiveMessage(lastChatId);
-}, 2000);
 
     </script>
   </body>
