@@ -108,11 +108,6 @@ exports.addMember = async (req, res, next) => {
         res.status(500).send("Internal Server Error");
     }
 };
-
-exports.makeAdmin=(req,res,next)=>{
-
-}
-
 exports.getAllGroupUsers = async (req, res, next) => {
     try {
         console.log('inside, getAllGroupUsers', req.query);

@@ -3,6 +3,7 @@ const userTable=require('../model/userModel')
 const Group=require('../model/groupModel')
 const {Op}=require('sequelize')
 const AWS=require('aws-sdk')
+const UserGroup=require('../model/userGroupModel')
 
 function uploadToS3(data,filename){
     const BUCKET_NAME=process.env.BUCKET_NAME;
@@ -130,22 +131,27 @@ exports.getchats=(req,res,next)=>{
 
     }
 
-exports.createGroup=(req,res,next)=>{
-    const user =req.user
-    console.log(req.user,req.body)
-    const {groupName}=req.body
-    user.createGroup({
-        groupName:groupName,
-        createdBy:user.id
-    }).then(data=>{
-        console.log('Group Created')
-        res.status(200).json({success:true,message:'Group Created',data})
-    }).catch(e=>{
-        console.log(e)
-        res.json({success:false,message:'Something went wrong'})
-    })
+    exports.createGroup = async (req, res, next) => {
+        try {
+            const user = req.user;
+            console.log(req.user, req.body);
+            const { groupName } = req.body;
+    
+            const data = await user.createGroup({
+                groupName: groupName,
+                createdBy: user.id
+            });
+            const UserGroupAdmin = await UserGroup.findOne({ where: { userDetailId: user.id, groupId: data.dataValues.id } });
+            await UserGroupAdmin.update({ isAdmin: true });
+            res.status(200).json({ success: true, message: 'Group Created', data });
+        } catch (error) {
+            console.error(error);
+            res.json({ success: false, message: 'Something went wrong' });
+        }
+    };
+    
+ 
 
-}
 exports.groupChat=async (req, res,next) => {
     const groupId = req.params.groupId;
     console.log(groupId,'groupId')

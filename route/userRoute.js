@@ -13,4 +13,5 @@ route.post('/make-admin',authController.authorization, userController.makeAdmin)
 route.post('/remove-admin',authController.authorization, userController.removeAdmin);
 
 
+
 module.exports=route

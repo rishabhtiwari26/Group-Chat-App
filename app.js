@@ -11,9 +11,11 @@ const sequelize  = require('./util/database')
 
 const User = require('./model/userModel')
 const Chat =require('./model/chatModel')
+const archivedChat=require('./model/archivedChat')
 const Group =require('./model/groupModel')
 const UserGroup =require('./model/userGroupModel')
 const PasswordLink=require('./model/forgetPasswordModel')
+// const cron=require('./services/cronJob')
 
 const userRoute=require('./route/userRoute')
 const chatRoute=require('./route/chatRoute')
