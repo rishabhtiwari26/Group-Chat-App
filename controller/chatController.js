@@ -2,6 +2,38 @@ const chat =require('../model/chatModel')
 const userTable=require('../model/userModel')
 const Group=require('../model/groupModel')
 const {Op}=require('sequelize')
+const AWS=require('aws-sdk')
+
+function uploadToS3(data,filename){
+    const BUCKET_NAME=process.env.BUCKET_NAME;
+    const IAM_USER_KEY=process.env.IAM_USER_KEY
+    const IAM_USER_SECRET=process.env.IAM_USER_SECRET
+    
+    let s3bucket= new AWS.S3({
+        accessKeyId:IAM_USER_KEY,
+        secretAccessKey:IAM_USER_SECRET
+    })
+
+    let params={
+        Bucket:BUCKET_NAME,
+        Key:filename,
+        Body:data,
+        ACL:'public-read'
+    }
+    return new Promise((resolve,reject)=>{
+        s3bucket.upload(params,(err,s3response)=>{
+            if(err){
+                console.log(err,'something went wrong in aws')
+                reject(err)
+            }else{
+                console.log('success',s3response)
+                resolve(s3response.Location)
+            }
+        })
+
+    })
+}
+
 
 exports.postchat=(req,res,next)=>{
     const user=req.user
@@ -132,3 +164,42 @@ exports.groupChat=async (req, res,next) => {
         res.status(500).json({ error: 'Internal server error' });
     }
 }
+
+exports.postImage=async (req,res,next)=>{
+    const user=req.user
+    const image = req.file;
+    const group=req.group
+    console.log(req,'req',image,'image')
+    const filename = `chat-images/group${group.id}/user${user.id}/${Date.now()}_${image.originalname}`;
+    const imageUrl = await uploadToS3(image.buffer, filename)
+    console.log(imageUrl)
+    if(group){
+    chat.create({
+        chat:imageUrl,
+        userDetailId:user.id,
+        groupId:group.id,
+        isImage:true
+    }).then(chat=>{
+        const requiredData={
+            id:chat.dataValues.id,
+            chat:chat.dataValues.chat,
+            userDetail:{
+                name:user.name,
+                email:user.email
+            }
+        }
+        
+        res.status(200).json(requiredData)
+    })
+    .catch(e=>res.json({success:false,message:'something went wrong'}))
+    }else{
+    chat.create({
+        chat:newChat,
+        userDetailId:user.id,
+        isImage:true
+    }).then(chat=>{
+        const chatId=chat.dataValues.id
+        res.status(200).json({success:true,message:'msg added',chatId})
+    })
+    .catch(e=>res.json({success:false,message:'something went wrong'}))    
+}}

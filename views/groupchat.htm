@@ -177,6 +177,7 @@
     <div id="chat-box"></div>
     <form id="message-form">
       <input type="text" id="message-input" placeholder="Type your message...">
+      <input type="file" id="image-input" accept="image/*">
       <button type="submit" id="send-button">Send</button>
     </form>
     <button id="logout-button">Logout</button>
@@ -203,6 +204,44 @@
   const addMemberButton = document.getElementById('add-member-button');
   const membersList = document.getElementById('members-list');
   const getMembersButton = document.getElementById('get-members-button')
+
+  const imageInput = document.getElementById('image-input');
+
+async function sendMessageWithImage(imageFile) {
+  try {
+    const token = localStorage.getItem('token');
+    const formData = new FormData();
+    formData.append('image', imageFile); // Append the image file to the FormData
+
+    const groupId = localStorage.getItem('gId');
+    const res = await axios.post('http://localhost:3000/chat/post-image', formData, {
+      headers: {
+        'Authorization': token,
+        'gId': groupId,
+        'Content-Type': 'multipart/form-data' // Set content type to multipart form data
+      }
+    });
+    if (res.data.success !=false){
+      console.log(res)
+      const storedChats = retrieveChats();
+      let lastChatId;
+      if (storedChats.length > 0) {
+          lastChatId = storedChats[storedChats.length - 1].id;
+      } else {
+          lastChatId = 0;
+      }
+      socket.emit('new-group-message', groupId, lastChatId);
+      storeChats([...storedChats, res.data])
+      addMessage(res.data.chat,res.data.userDetail.name,true)
+
+    }
+    else{
+      throw new Error('not able to post')
+    }
+  } catch (e) {
+    console.log(e);
+  }
+}
 
   document.getElementById('logout-button').addEventListener('click', function() {
     const confirmLogout = confirm('Are you sure you want to log out?');
@@ -334,24 +373,30 @@ function displayMembers(members) {
     try {
         const token = localStorage.getItem('token');
         const obj = {
-            chat: message,
+            chat: message
         };
         const groupId = localStorage.getItem('gId');
         const res = await axios.post('http://localhost:3000/chat/postchat', obj, {
             headers: {'Authorization': token, 'gId': groupId}
         });
-        console.log(res)
-        const storedChats = retrieveChats();
-        let lastChatId;
-        if (storedChats.length > 0) {
-            lastChatId = storedChats[storedChats.length - 1].id;
-        } else {
-            lastChatId = 0;
+        if (res.data.success !=false){
+          console.log(res)
+          const storedChats = retrieveChats();
+          let lastChatId;
+          if (storedChats.length > 0) {
+              lastChatId = storedChats[storedChats.length - 1].id;
+          } else {
+              lastChatId = 0;
+          }
+          socket.emit('new-group-message', groupId, lastChatId);
+          storeChats([...storedChats, res.data])
+          addMessage(res.data.chat,res.data.userDetail.name,true)
+          console.log('Sent message:', message);
+
         }
-        socket.emit('new-group-message', groupId, lastChatId);
-        storeChats([...storedChats, res.data])
-        addMessage(res.data.chat,res.data.userDetail.name,true)
-        console.log('Sent message:', message);
+        else{
+          throw new Error('not able to post')
+        }
     } catch (e) {
         console.log(e);
     }
@@ -423,16 +468,29 @@ function displayMembers(members) {
     return storedChats !== null ? JSON.parse(storedChats) : [];
     
   }
-  messageForm.addEventListener('submit', function(event) {
+  messageForm.addEventListener('submit', async function(event) {
     event.preventDefault();
     const message = messageInput.value.trim();
-    
-    if (message !== '') {
-      //addMessage(message, 'You', true);
-      sendMessage(message);
-      messageInput.value = ''; // Clear the input field
+    const imageFile = imageInput.files[0];
+
+    if (message !== '' && imageFile) {
+        alert('Please choose either a message or an image to send, not both.');
+        return;
     }
-  });
+
+    try {
+        if (message !== '') {
+            await sendMessage(message)
+        } else if (imageFile) {
+            await sendMessageWithImage(imageFile);
+        }
+        messageInput.value = ''; // Clear the message input field
+        imageInput.value = ''; // Clear the image input field
+    } catch (error) {
+        console.error('Error sending message:', error);
+    }
+});
+
   addMemberForm.addEventListener('submit', function(event) {
     event.preventDefault();
     const email = addMemberInput.value.trim();

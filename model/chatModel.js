@@ -12,7 +12,11 @@ const chat = sequelize.define('chatDetails',{
     chat:{
         type:Sequelize.STRING,
         allowNull:false
-    }
+    },
+    isImage:{
+        type : Sequelize.BOOLEAN , 
+      defaultValue : false
+    },
 }
 )
 module.exports=chat

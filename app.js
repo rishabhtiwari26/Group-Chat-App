@@ -18,7 +18,7 @@ const PasswordLink=require('./model/forgetPasswordModel')
 const userRoute=require('./route/userRoute')
 const chatRoute=require('./route/chatRoute')
 const passwordRoute=require('./route/passwordRoute')
-const websocket=require('./route/websocket')
+const websocket=require('./services/websocket') 
 
 const httpServer = require('http').createServer(app);
 const io = require('socket.io')(httpServer, {
