@@ -180,7 +180,6 @@
     <div id="groupListContainer">
         <h3>Groups</h3>
         <ul id="groupList">
-            <!-- Group list will be populated here -->
         </ul>
     </div>
     
@@ -220,7 +219,6 @@
         function logout() {
             const confirmLogout = confirm('Are you sure you want to log out?');
             if (confirmLogout) {
-              // Clear local storage and redirect to login page
               localStorage.clear();
               window.location.href = 'login.htm';
             }
@@ -232,8 +230,6 @@
             axios.post('http://localhost:3000/chat/create-group',obj,{headers:{'Authorization':token}})
                 .then(res=>{
                     console.log(res)
-                    // Add logic to update group list
-                    // You may need to call a function to fetch and populate group list here
                     fetchGroups()
                     document.getElementById('createGroupForm').style.display = 'none';
                     document.getElementById('groupName').value=''

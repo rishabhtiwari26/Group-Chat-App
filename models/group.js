@@ -13,9 +13,6 @@ const user = sequelize.define('group',{
         type:Sequelize.STRING,
         allowNull:false
     },
-    membersNo:{
-        type:Sequelize.INTEGER
-    },
     createdBy:{
         type:Sequelize.STRING,
         allowNull:false

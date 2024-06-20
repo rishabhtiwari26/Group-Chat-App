@@ -9,17 +9,17 @@ const path=require('path')
 
 const sequelize  = require('./util/database')
 
-const User = require('./model/userModel')
-const Chat =require('./model/chatModel')
-const archivedChat=require('./model/archivedChat')
-const Group =require('./model/groupModel')
-const UserGroup =require('./model/userGroupModel')
-const PasswordLink=require('./model/forgetPasswordModel')
-// const cron=require('./services/cronJob')
+const User = require('./models/user')
+const Chat =require('./models/chat')
+const archivedChat=require('./models/archived')
+const Group =require('./models/group')
+const UserGroup =require('./models/user-group')
+const PasswordLink=require('./models/forget-password')
+const cron=require('./services/cronJob')
 
-const userRoute=require('./route/userRoute')
-const chatRoute=require('./route/chatRoute')
-const passwordRoute=require('./route/passwordRoute')
+const userRoute=require('./routes/user')
+const chatRoute=require('./routes/chat')
+const passwordRoute=require('./routes/password')
 const websocket=require('./services/websocket') 
 
 const httpServer = require('http').createServer(app);

@@ -1,8 +1,8 @@
 const Sib = require('sib-api-v3-sdk');
 require('dotenv').config()
 const { v4: uuidv4 } = require('uuid');
-const passwordLink = require('../model/forgetPasswordModel');
-const user = require('../model/userModel');
+const passwordLink = require('../models/forget-password');
+const user = require('../models/user');
 const sequelize = require('../util/database');
 const client=Sib.ApiClient.instance
 const apiKey=client.authentications['api-key']

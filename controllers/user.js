@@ -1,8 +1,8 @@
-const User = require('../model/userModel')
-const Group=require('../model/groupModel')
+const User = require('../models/user')
+const Group=require('../models/group')
 const bcrypt = require('bcrypt')
 const jwt =require('jsonwebtoken')
-const UserGroup = require('../model/userGroupModel')
+const UserGroup = require('../models/user-group')
 function generateAccessToken(id){
     return jwt.sign({userId:id},process.env.TOKEN_SECRET)
 

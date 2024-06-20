@@ -180,8 +180,9 @@
       <input type="file" id="image-input" accept="image/*">
       <button type="submit" id="send-button">Send</button>
     </form>
-    <button id="logout-button">Logout</button>
-  </div>
+    <button id="get-old-chats-button">Get Old Chats</button>
+    </div>
+  <button id="logout-button">Logout</button>
 
 <script src="https://cdn.jsdelivr.net/npm/axios@1.1.2/dist/axios.min.js"></script>
 <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
@@ -197,13 +198,13 @@
 })
   const chatBox = document.getElementById('chat-box');
   const messageInput = document.getElementById('message-input');
-  const sendButton = document.getElementById('send-button');
   const messageForm = document.getElementById('message-form');
   const addMemberForm = document.getElementById('add-member-form');
   const addMemberInput = document.getElementById('add-member-input');
   const addMemberButton = document.getElementById('add-member-button');
   const membersList = document.getElementById('members-list');
   const getMembersButton = document.getElementById('get-members-button')
+  const getOldChatsButton = document.getElementById('get-old-chats-button');
 
   const imageInput = document.getElementById('image-input');
 
@@ -211,14 +212,14 @@ async function sendMessageWithImage(imageFile) {
   try {
     const token = localStorage.getItem('token');
     const formData = new FormData();
-    formData.append('image', imageFile); // Append the image file to the FormData
+    formData.append('image', imageFile); 
 
     const groupId = localStorage.getItem('gId');
     const res = await axios.post('http://localhost:3000/chat/post-image', formData, {
       headers: {
         'Authorization': token,
         'gId': groupId,
-        'Content-Type': 'multipart/form-data' // Set content type to multipart form data
+        'Content-Type': 'multipart/form-data'
       }
     });
     if (res.data.success !=false){
@@ -246,11 +247,34 @@ async function sendMessageWithImage(imageFile) {
   document.getElementById('logout-button').addEventListener('click', function() {
     const confirmLogout = confirm('Are you sure you want to log out?');
     if (confirmLogout) {
-      // Clear local storage and redirect to login page
+      
       localStorage.clear();
       window.location.href = 'login.htm';
     }
   });
+
+  getOldChatsButton.addEventListener('click', async () => {
+    try {
+        
+        const token = localStorage.getItem('token');
+        const groupId = localStorage.getItem('gId');
+        const url = 'http://localhost:3000/chat/get-old-chats';
+        const response = await axios.get(url, {
+            headers: {
+                'Authorization': token,
+                'gId': groupId
+            }
+        });
+
+        chatBox.innerHTML=''
+        const oldChats = response.data;
+        oldChats.forEach(chat => {
+            addMessage(chat.chat, chat.userDetail.name, true);
+        });
+    } catch (error) {
+        console.error('Error fetching old chats:', error);
+    }
+});
 
   getMembersButton.addEventListener('click', () => {
     const gid = localStorage.getItem('gId');

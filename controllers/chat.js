@@ -1,9 +1,10 @@
-const chat =require('../model/chatModel')
-const userTable=require('../model/userModel')
-const Group=require('../model/groupModel')
+const chat =require('../models/chat')
+const userTable=require('../models/user')
+const Group=require('../models/group')
 const {Op}=require('sequelize')
 const AWS=require('aws-sdk')
-const UserGroup=require('../model/userGroupModel')
+const UserGroup=require('../models/user-group')
+const archivedChat=require('../models/archived')
 
 function uploadToS3(data,filename){
     const BUCKET_NAME=process.env.BUCKET_NAME;
@@ -93,6 +94,53 @@ exports.getchats=(req,res,next)=>{
                 {id:{
                     [Op.gt]:lastChatId
                 },groupId:groupId
+            },
+            include:[{
+                model:userTable,
+                attributes:['name','email']
+            }],
+            attributes: ['id','chat']
+        })
+            .then(newChats => {
+                res.status(200).json(newChats)
+            })
+            .catch(error => {
+                console.error('Error fetching new chats:', error)
+                res.status(500).json({ error: 'No new Chats' })
+            })
+    }else{
+        console.log('in else getChat')
+        chat.findAll({
+            where:
+                {id:{
+                    [Op.gt]:lastChatId
+                }
+            },
+            include:[{
+                model:userTable,
+                attributes:['name','email']
+            }]
+        })
+            .then(newChats => {
+                res.status(200).json(newChats)
+            })
+            .catch(error => {
+                console.error('Error fetching new chats:', error)
+                res.status(500).json({ error: 'No new Chats' })
+            })
+    }
+
+    }
+exports.getOldChats=(req,res,next)=>{
+    console.log(req.query,'req.query')
+    const groupId = req.group.id
+    console.log(lastChatId,'lastChatId')
+    if (groupId){
+        console.log('in if getChat')
+        archivedChat.findAll({
+            where:
+                {
+                    groupId:groupId
             },
             include:[{
                 model:userTable,

@@ -1,7 +1,7 @@
 const jwt = require('jsonwebtoken');
-const User = require('../model/userModel');
+const User = require('../models/user');
 const tokenKey = process.env.TOKEN_SECRET;
-const Group=require('../model/groupModel')
+const Group=require('../models/group')
 
 
 exports.authorization = async(req,res,next)=>{
