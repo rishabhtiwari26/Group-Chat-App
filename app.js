@@ -44,14 +44,14 @@ app.use('/login.htm', (req, res) => {
 app.use('/signup.htm', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'signup.htm'));
 });
-app.use('/chat_app.htm', (req, res) => {
-    res.sendFile(path.join(__dirname, 'views', 'chat_app.htm'));
+app.use('/chat-app.htm', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'chat-app.htm'));
 });
 app.use('/groupchat.htm', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'groupchat.htm'));
 });
-app.use('/reset_password.htm', (req, res) => {
-    res.sendFile(path.join(__dirname, 'views', 'reset_password.htm'));
+app.use('/reset-password.htm', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'reset-password.htm'));
 });
 app.use('/forgetpassword.htm', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'forgetPassword.htm'));

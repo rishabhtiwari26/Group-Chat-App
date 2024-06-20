@@ -79,7 +79,7 @@ exports.resetPassword=(req,res,next)=>{
                             <script>
                                 function newf(){
                                     const password=document.getElementById('newpassword').value
-                                    const url='http://localhost:3000/reset_password.htm?message=Reset%20your%20password"&token=${newtoken}&pass='+password
+                                    const url='http://localhost:3000/reset-password.htm?message=Reset%20your%20password"&token=${newtoken}&pass='+password
                                     window.location.href= url
                                 }
                             </script>
